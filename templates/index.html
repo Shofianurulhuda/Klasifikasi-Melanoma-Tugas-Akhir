@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MelanoLens — Melanoma Classification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f6fa;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#667085;
+  --muted-2:#8a94a6;
+  --line:#dce5f2;
+  --blue:#2f80ed;
+  --blue-dark:#1f63c7;
+  --blue-soft:#eaf3ff;
+  --orange:#ff9f43;
+  --orange-dark:#f07814;
+  --orange-soft:#fff3e3;
+  --green:#12b886;
+  --red:#ef4444;
+  --shadow:0 18px 45px rgba(26,43,73,.10);
+  --shadow-soft:0 10px 25px rgba(26,43,73,.07);
+  --radius-xl:28px;
+  --radius-lg:22px;
+  --radius-md:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;
+  font-family:'Poppins',sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(47,128,237,.10), transparent 28%),
+    radial-gradient(circle at 88% 14%, rgba(255,159,67,.16), transparent 25%),
+    linear-gradient(180deg,#f8fafc 0%,var(--bg) 100%);
+  padding:28px;
+}
+.page{
+  max-width:1180px;
+  margin:0 auto;
+}
+.hero{
+  text-align:center;
+  padding:20px 16px 24px;
+}
+.logo-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 16px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow-soft);
+  color:var(--muted);
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:18px;
+}
+.logo-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--orange));
+}
+.hero h1{
+  font-size:clamp(34px,5vw,58px);
+  line-height:1.12;
+  letter-spacing:-.045em;
+  font-weight:800;
+  max-width:780px;
+  margin:0 auto 14px;
+}
+.hero h1 span{
+  color:var(--blue);
+  position:relative;
+}
+.hero h1 span::after{
+  content:"";
+  position:absolute;
+  height:10px;
+  left:0;right:0;bottom:5px;
+  background:rgba(255,159,67,.35);
+  z-index:-1;
+  border-radius:999px;
+}
+.hero p{
+  max-width:660px;
+  margin:0 auto;
+  color:var(--muted);
+  font-size:15px;
+  line-height:1.8;
+}
+.metric-wrap{
+  display:flex;
+  justify-content:center;
+  margin:24px 0 30px;
+}
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:rgba(255,255,255,.88);
+  box-shadow:var(--shadow-soft);
+  backdrop-filter:blur(10px);
+}
+.metric{
+  min-width:135px;
+  padding:14px 18px;
+  text-align:center;
+  border-right:1px solid var(--line);
+}
+.metric:last-child{border-right:0}
+.metric strong{
+  display:block;
+  font-size:18px;
+  line-height:1;
+  color:var(--blue);
+  font-weight:800;
+  margin-bottom:6px;
+}
+.metric:nth-child(even) strong{color:var(--orange-dark)}
+.metric span{
+  color:var(--muted);
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.error-card{
+  display:none;
+  margin:0 auto 18px;
+  max-width:940px;
+  background:#fff5f5;
+  color:#b42318;
+  border:1px solid #ffd1d1;
+  border-radius:18px;
+  padding:14px 18px;
+  font-size:14px;
+  box-shadow:var(--shadow-soft);
+}
+.main-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:26px;
+  align-items:stretch;
+}
+.panel{
+  background:rgba(255,255,255,.92);
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  padding:28px;
+  box-shadow:var(--shadow);
+}
+.panel-head{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  margin-bottom:22px;
+}
+.panel-icon{
+  width:44px;height:44px;
+  display:grid;place-items:center;
+  flex:none;
+  border-radius:15px;
+  background:linear-gradient(135deg,var(--blue-soft),#fff);
+  color:var(--blue);
+  border:1px solid var(--line);
+  font-size:21px;
+}
+.panel.upload .panel-icon{
+  background:linear-gradient(135deg,var(--orange-soft),#fff);
+  color:var(--orange-dark);
+}
+.panel h2{
+  font-size:22px;
+  line-height:1.2;
+  font-weight:700;
+  margin-bottom:7px;
+}
+.panel p{
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.7;
+}
+.drop-zone{
+  min-height:250px;
+  border:2px dashed #cfd9e8;
+  border-radius:22px;
+  background:linear-gradient(180deg,#fbfdff,#f7faff);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:26px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:.25s ease;
+}
+.drop-zone::before{
+  content:"";
+  position:absolute;
+  width:190px;height:190px;
+  border-radius:50%;
+  background:rgba(47,128,237,.07);
+  top:-85px;right:-80px;
+}
+.drop-zone:hover,.drop-zone.drag-over{
+  border-color:var(--blue);
+  transform:translateY(-2px);
+  box-shadow:0 12px 24px rgba(47,128,237,.12);
+}
+.drop-zone input{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  opacity:0;
+  cursor:pointer;
+  z-index:5;
+}
+.drop-content{
+  position:relative;
+  z-index:1;
+  pointer-events:none;
+}
+.drop-icon{
+  width:62px;height:62px;
+  margin:0 auto 14px;
+  display:grid;place-items:center;
+  border-radius:20px;
+  background:linear-gradient(135deg,var(--blue),#61b8ff);
+  color:#fff;
+  font-size:28px;
+  box-shadow:0 14px 25px rgba(47,128,237,.20);
+}
+.drop-title{
+  font-size:17px;
+  font-weight:700;
+  margin-bottom:7px;
+}
+.drop-sub{
+  color:var(--muted);
+  font-size:13px;
+}
+.format-row{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.format-row span{
+  font-size:11px;
+  font-weight:700;
+  color:var(--muted);
+  background:#fff;
+  border:1px solid var(--line);
+  padding:5px 9px;
+  border-radius:999px;
+}
+.file-info{
+  display:none;
+  margin-top:16px;
+  border-radius:16px;
+  padding:13px 15px;
+  background:var(--orange-soft);
+  color:#9a4b05;
+  font-size:13px;
+  font-weight:600;
+  border:1px solid #ffd9a8;
+}
+.preview-box{
+  min-height:250px;
+  height:calc(100% - 82px);
+  border:2px dashed #cfd9e8;
+  border-radius:22px;
+  background:#f8fbff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+.preview-placeholder{
+  text-align:center;
+  color:var(--muted);
+  padding:20px;
+}
+.preview-placeholder span{
+  display:grid;
+  place-items:center;
+  width:70px;height:70px;
+  margin:0 auto 12px;
+  border-radius:24px;
+  background:#fff;
+  border:1px solid var(--line);
+  color:var(--orange-dark);
+  font-size:30px;
+  box-shadow:var(--shadow-soft);
+}
+.preview-placeholder p{font-weight:600;color:var(--muted)}
+#preview-img{
+  width:100%;height:100%;object-fit:cover;display:none;
+}
+.btn-primary{
+  width:100%;
+  margin:26px 0 0;
+  border:0;
+  border-radius:999px;
+  padding:18px 22px;
+  cursor:pointer;
+  color:#fff;
+  font-family:'Poppins',sans-serif;
+  font-size:16px;
+  font-weight:700;
+  background:linear-gradient(135deg,var(--blue),#58c3ff);
+  box-shadow:0 16px 35px rgba(47,128,237,.22);
+  transition:.25s ease;
+}
+.btn-primary:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 20px 42px rgba(47,128,237,.28);
+}
+.btn-primary:disabled{
+  background:#aeb8c8;
+  box-shadow:none;
+  cursor:not-allowed;
+}
+.btn-inner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.spinner{
+  display:none;
+  width:18px;height:18px;
+  border:3px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#result-section{
+  display:none;
+  margin-top:34px;
+}
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px;
+}
+.section-icon{
+  width:42px;height:42px;
+  display:grid;place-items:center;
+  border-radius:15px;
+  background:var(--orange-soft);
+  color:var(--orange-dark);
+  border:1px solid #ffd9a8;
+}
+.section-title h2{
+  font-size:24px;
+  font-weight:800;
+}
+.result-grid{
+  display:grid;
+  grid-template-columns:1.45fr .9fr;
+  gap:24px;
+}
+.result-card{
+  border-radius:var(--radius-xl);
+  padding:30px;
+  color:#fff;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  position:relative;
+}
+.result-card::after{
+  content:"";
+  position:absolute;
+  width:230px;height:230px;
+  border-radius:50%;
+  right:-90px;top:-80px;
+  background:rgba(255,255,255,.13);
+}
+.result-card.melanoma{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+.result-card.non-melanoma{background:linear-gradient(135deg,var(--blue),#12b886)}
+.result-badge{
+  display:inline-flex;
+  padding:8px 13px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.28);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+.result-label{
+  font-size:38px;
+  line-height:1.08;
+  font-weight:800;
+  letter-spacing:-.03em;
+  margin-bottom:14px;
+}
+.result-description{
+  font-size:14px;
+  line-height:1.8;
+  opacity:.96;
+  max-width:680px;
+  margin-bottom:22px;
+}
+.confidence-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.30);
+  font-weight:700;
+}
+.conf-dot{width:9px;height:9px;border-radius:50%;background:#fff}
+.probability-section{
+  border-radius:var(--radius-xl);
+  background:#fff;
+  border:1px solid var(--line);
+  padding:26px;
+  box-shadow:var(--shadow);
+}
+.probability-section h3{
+  font-size:18px;
+  font-weight:800;
+  margin-bottom:22px;
+}
+.prob-item{margin-bottom:22px}
+.prob-item:last-child{margin-bottom:0}
+.prob-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.prob-label{font-size:14px;font-weight:700;color:var(--text)}
+.prob-percentage{font-size:22px;font-weight:800}
+.prob-percentage.melanoma{color:var(--red)}
+.prob-percentage.non-melanoma{color:var(--blue)}
+.prob-bar-track{
+  height:11px;
+  border-radius:999px;
+  background:#e8eef6;
+  overflow:hidden;
+}
+.prob-bar-fill{height:100%;border-radius:999px;transition:width 1s cubic-bezier(.22,1,.36,1)}
+.prob-bar-fill.melanoma{background:linear-gradient(90deg,#fb7185,var(--red))}
+.prob-bar-fill.non-melanoma{background:linear-gradient(90deg,var(--blue),#59c6ff)}
+.info-card{
+  margin-top:22px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-left:6px solid var(--orange);
+  border-radius:22px;
+  padding:22px 24px;
+  box-shadow:var(--shadow-soft);
+}
+.info-card h3{font-size:17px;margin-bottom:8px;color:var(--text)}
+.info-card p{font-size:14px;line-height:1.8;color:var(--muted)}
+.abcde-section{
+  margin-top:42px;
+}
+.abcde-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:16px;
+}
+.abcde-card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:20px;
+  box-shadow:var(--shadow-soft);
+}
+.abcde-letter{
+  font-size:34px;
+  font-weight:800;
+  color:var(--orange-dark);
+  line-height:1;
+  margin-bottom:10px;
+}
+.abcde-card:nth-child(even) .abcde-letter{color:var(--blue)}
+.abcde-title{font-size:14px;font-weight:800;margin-bottom:7px}
+.abcde-desc{font-size:12px;line-height:1.7;color:var(--muted)}
+footer{
+  text-align:center;
+  margin:40px 0 10px;
+  color:var(--muted-2);
+  font-size:13px;
+}
+.fade-in{animation:fadeIn .45s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){
+  body{padding:18px}
+  .main-grid,.result-grid{grid-template-columns:1fr}
+  .abcde-grid{grid-template-columns:repeat(2,1fr)}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric:nth-child(2){border-right:0}
+  .metric:nth-child(1),.metric:nth-child(2){border-bottom:1px solid var(--line)}
+}
+@media(max-width:560px){
+  .panel{padding:20px;border-radius:22px}
+  .hero h1{font-size:32px}
+  .metrics{width:100%}
+  .metric{min-width:0;padding:12px 10px}
+  .abcde-grid{grid-template-columns:1fr}
+  .result-label{font-size:30px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero fade-in">
+    <div class="logo-pill"><span class="logo-dot"></span> MelanoLens · AI Melanoma Classifier</div>
+    <h1>Deteksi <span>Melanoma</span> dari Citra Dermoskopi</h1>
+    <p>Unggah citra dermoskopi untuk memperoleh hasil klasifikasi berbasis model MobileNetV2, lengkap dengan confidence score dan distribusi probabilitas.</p>
+  </header>
+
+  <div class="metric-wrap fade-in">
+    <div class="metrics">
+      <div class="metric"><strong>87.02%</strong><span>Accuracy</span></div>
+      <div class="metric"><strong>0.8796</strong><span>Recall</span></div>
+      <div class="metric"><strong>0.7492</strong><span>F1-Score</span></div>
+      <div class="metric"><strong>0.9433</strong><span>AUC-ROC</span></div>
+    </div>
+  </div>
+
+  <div class="error-card" id="error-card"><strong>Perhatian:</strong> <span id="error-msg"></span></div>
+
+  <main class="main-grid fade-in">
+    <section class="panel upload">
+      <div class="panel-head">
+        <div class="panel-icon">📤</div>
+        <div>
+          <h2>Pilih Citra</h2>
+          <p>Unggah citra dermoskopi format JPG atau PNG. Pastikan citra memiliki pencahayaan merata dan objek lesi terlihat jelas.</p>
+        </div>
+      </div>
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".jpg,.jpeg,.png">
+        <div class="drop-content">
+          <div class="drop-icon">🖼️</div>
+          <div class="drop-title">Drag & drop atau klik untuk upload</div>
+          <div class="drop-sub">Maksimal ukuran file 16 MB</div>
+          <div class="format-row"><span>JPG</span><span>JPEG</span><span>PNG</span></div>
+        </div>
+      </div>
+      <div class="file-info" id="file-info"></div>
+    </section>
+
+    <section class="panel preview">
+      <div class="panel-head">
+        <div class="panel-icon">👁️</div>
+        <div>
+          <h2>Preview</h2>
+          <p>Verifikasi citra yang dipilih sebelum menjalankan proses klasifikasi.</p>
+        </div>
+      </div>
+      <div class="preview-box">
+        <div class="preview-placeholder" id="preview-placeholder">
+          <span>📷</span>
+          <p>Preview akan muncul di sini</p>
+        </div>
+        <img id="preview-img" alt="Preview citra dermoskopi">
+      </div>
+    </section>
+  </main>
+
+  <button class="btn-primary" id="btn-classify" disabled>
+    <div class="btn-inner">
+      <span class="spinner" id="btn-spinner"></span>
+      <span id="btn-text">🚀 Analisis Citra</span>
+    </div>
+  </button>
+
+  <section id="result-section" class="fade-in">
+    <div class="section-title">
+      <div class="section-icon">📊</div>
+      <h2>Hasil Klasifikasi</h2>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card" id="result-card">
+        <div class="result-badge" id="result-badge">Prediction Result</div>
+        <div class="result-label" id="result-label">—</div>
+        <div class="result-description" id="result-description">—</div>
+        <div class="confidence-badge">
+          <div class="conf-dot"></div>
+          <span>Confidence: <strong id="result-conf">—</strong></span>
+        </div>
+      </div>
+
+      <div class="probability-section">
+        <h3>Distribusi Probabilitas</h3>
+        <div class="prob-item">
+          <div class="prob-header">
+            <span class="prob-label">🔴 Melanoma</span>
+            <div class="prob-percentage melanoma" id="prob-melanoma-pct">—</div>
+          </div>
+          <div class="prob-bar-track"><div class="prob-bar-fill melanoma" id="prob-melanoma-bar" style="width:0%"></div></div>
+        </div>
+        <div class="prob-item">
+          <div class="prob-header">
+            <span class="prob-label">🔵 Non-Melanoma</span>
+            <div class="prob-percentage non-melanoma" id="prob-non-melanoma-pct">—</div>
+          </div>
+          <div class="prob-bar-track"><div class="prob-bar-fill non-melanoma" id="prob-non-melanoma-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Catatan Klinis</h3>
+      <p><strong>Disclaimer:</strong> Sistem ini dirancang untuk citra dermoskopi lesi kulit dan menggunakan model klasifikasi biner melanoma/non-melanoma. Jika gambar yang diunggah berada di luar domain penelitian, seperti gambar hewan, benda, makanan, atau foto umum, model tetap akan memetakan gambar ke salah satu kelas. Oleh karena itu, hasil prediksi hanya valid apabila input sesuai dengan karakteristik data pelatihan. Confidence score ditampilkan sebagai informasi tingkat keyakinan model, bukan sebagai validasi bahwa gambar pasti merupakan citra dermoskopi.</p>
+    </div>
+  </section>
+
+  <section class="abcde-section fade-in">
+    <div class="section-title">
+      <div class="section-icon">📋</div>
+      <h2>Panduan ABCDE</h2>
+    </div>
+    <div class="abcde-grid">
+      <div class="abcde-card"><div class="abcde-letter">A</div><div class="abcde-title">Asymmetry</div><div class="abcde-desc">Bentuk lesi tampak tidak simetris antara satu sisi dan sisi lainnya.</div></div>
+      <div class="abcde-card"><div class="abcde-letter">B</div><div class="abcde-title">Border</div><div class="abcde-desc">Tepi lesi tidak beraturan, bergerigi, atau tampak kabur.</div></div>
+      <div class="abcde-card"><div class="abcde-letter">C</div><div class="abcde-title">Color</div><div class="abcde-desc">Terdapat variasi warna seperti cokelat, hitam, merah, biru, atau putih.</div></div>
+      <div class="abcde-card"><div class="abcde-letter">D</div><div class="abcde-title">Diameter</div><div class="abcde-desc">Lesi dengan diameter besar perlu diamati dan dievaluasi lebih lanjut.</div></div>
+      <div class="abcde-card"><div class="abcde-letter">E</div><div class="abcde-title">Evolution</div><div class="abcde-desc">Perubahan ukuran, bentuk, warna, atau gejala menjadi sinyal penting.</div></div>
+    </div>
+  </section>
+
+  <footer>© 2026 · MelanoLens · Flask · PyTorch · MobileNetV2</footer>
+</div>
+
+<script>
+const fileInput = document.getElementById('file-input');
+const dropZone = document.getElementById('drop-zone');
+const previewImg = document.getElementById('preview-img');
+const previewPH = document.getElementById('preview-placeholder');
+const fileInfo = document.getElementById('file-info');
+const btnClassify = document.getElementById('btn-classify');
+const btnText = document.getElementById('btn-text');
+const btnSpinner = document.getElementById('btn-spinner');
+const errorCard = document.getElementById('error-card');
+const errorMsg = document.getElementById('error-msg');
+const resultSec = document.getElementById('result-section');
+let selectedFile = null;
+
+// Memastikan seluruh area upload dapat diklik, bukan hanya titik tertentu
+dropZone.addEventListener('click', e => {
+  if (e.target !== fileInput) fileInput.click();
+});
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file){
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(!['jpg','jpeg','png'].includes(ext)){ showError(`Format "${ext}" tidak didukung. Gunakan JPG atau PNG.`); return; }
+  if(file.size > 16 * 1024 * 1024){ showError('Ukuran file melebihi 16 MB.'); return; }
+  selectedFile = file;
+  hideError();
+  const reader = new FileReader();
+  reader.onload = e => { previewImg.src = e.target.result; previewImg.style.display = 'block'; previewPH.style.display = 'none'; };
+  reader.readAsDataURL(file);
+  const size = file.size > 1024*1024 ? (file.size/(1024*1024)).toFixed(2)+' MB' : (file.size/1024).toFixed(1)+' KB';
+  fileInfo.textContent = `${file.name} · ${size}`;
+  fileInfo.style.display = 'block';
+  btnClassify.disabled = false;
+}
+
+btnClassify.addEventListener('click', async () => {
+  if(!selectedFile) return;
+  setLoading(true); hideError(); resultSec.style.display = 'none';
+  const fd = new FormData(); fd.append('file', selectedFile);
+  try{
+    const res = await fetch('/predict', { method:'POST', body:fd });
+    const data = await res.json();
+    if(!res.ok || data.error){ showError(data.error || 'Terjadi kesalahan pada server.'); }
+    else{ renderResult(data); }
+  }catch(err){ showError('Tidak dapat terhubung ke server. Pastikan backend Flask sedang berjalan.'); }
+  finally{ setLoading(false); }
+});
+
+function renderResult(d) {
+  const resultCard = document.getElementById('result-card');
+  const isMelanoma = d.class_idx === 1;
+  const melanoma = d.probabilities.malignant || d.probabilities[1] || 0;
+  const nonMelanoma = d.probabilities.benign || d.probabilities[0] || 0;
+  const confidencePct = (d.confidence * 100).toFixed(2);
+  const thresholdPct = ((d.confidence_threshold || 0.70) * 100).toFixed(0);
+
+  resultCard.className = `result-card ${isMelanoma ? 'melanoma' : 'non-melanoma'}`;
+
+  document.getElementById('result-badge').textContent =
+    d.is_low_confidence ? 'Low Confidence Result' : 'Prediction Result';
+
+  document.getElementById('result-label').textContent =
+    isMelanoma ? '🔴 MELANOMA' : '🟢 NON-MELANOMA';
+
+  let description = isMelanoma
+    ? 'Model mengklasifikasikan citra sebagai melanoma berdasarkan pola visual yang dipelajari dari data latih. Pemeriksaan lanjutan oleh tenaga medis tetap diperlukan untuk konfirmasi.'
+    : 'Model mengklasifikasikan citra sebagai non-melanoma/jinak berdasarkan pola visual yang dipelajari dari data latih. Tetap lakukan monitoring dan konsultasi jika terjadi perubahan pada lesi.';
+
+  if (d.is_low_confidence) {
+    description += ` Confidence prediksi berada di bawah ${thresholdPct}%, sehingga hasil perlu diinterpretasikan dengan lebih hati-hati.`;
+  }
+
+  document.getElementById('result-description').textContent = description;
+  document.getElementById('result-conf').textContent = confidencePct + '%';
+
+  document.getElementById('prob-melanoma-pct').textContent =
+    (melanoma * 100).toFixed(2) + '%';
+
+  document.getElementById('prob-non-melanoma-pct').textContent =
+    (nonMelanoma * 100).toFixed(2) + '%';
+
+  requestAnimationFrame(() => {
+    document.getElementById('prob-melanoma-bar').style.width =
+      (melanoma * 100) + '%';
+
+    document.getElementById('prob-non-melanoma-bar').style.width =
+      (nonMelanoma * 100) + '%';
+  });
+
+  resultSec.style.display = 'block';
+  resultSec.classList.remove('fade-in');
+  void resultSec.offsetWidth;
+  resultSec.classList.add('fade-in');
+
+  setTimeout(() => {
+    resultSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
+function setLoading(on){
+  btnClassify.classList.toggle('loading', on);
+  btnClassify.disabled = on;
+  btnSpinner.style.display = on ? 'block' : 'none';
+  btnText.textContent = on ? 'Menganalisis...' : '🚀 Analisis Citra';
+}
+function showError(msg){ errorMsg.textContent = msg; errorCard.style.display = 'block'; }
+function hideError(){ errorCard.style.display = 'none'; }
+</script>
+</body>
+</html>
